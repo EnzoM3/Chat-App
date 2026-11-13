@@ -1,25 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"
+    <meta charset="UTF-8">
     <title>FastAPI & Alpine Chat</title>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="icon" href="data:,">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js" defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 h-screen flex items-center justify-center p-4">
-    <div x-data="chatApp()" x-init="init=initsocket()" class="w-full max-w-md bg-white rounded-lg shadow-md p-6 flex flex-col h-[500px]">
-        <h2 class="text-xl font-bold mb-4 text-blue-600 border-none pb-0">Chat Room</h2>
+    <div x-data="chatApp()" x-init="initSocket()" class="w-full max-w-md bg-white rounded-lg shadow-md p-6 flex flex-col h-[500px]">
+        <h2 class="text-xl font-bold mb-4 text-blue-600">Chat Room</h2>
 
-        <!-- Chat Messages Window-->
+        <!-- TODO 1: Add an <input type="text"> here bound with x-model="username" so the user can enter their sender name -->
+
+        <!-- Chat Messages Window -->
         <div class="flex-1 overflow-y-auto border p-3 rounded mb-4 space-y-2 bg-gray-50">
             <template x-for="(msg, index) in messages" :key="index">
+                <!-- TODO 2: Update this bubble to display both `msg.username` (e.g. in a bold small tag) and `msg.message` instead of just `x-text="msg"` -->
                 <div class="bg-blue-100 text-blue-900 p-2 rounded max-w-[85%] text-sm" x-text="msg"></div>
-
             </template>
-        </div> 
-        
-        <form @submit.prevent="sendMessage()" class="flex gap-2"
-    </div>
-</body>
+        </div>
 
+        <form @submit.prevent="sendMessage()" class="flex gap-2">
+            <input type="text" x-model="input" placeholder="Type a message..."
+                   class="flex-1 border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 font-medium">Send</button>
+        </form>
+    </div>
+
+    <script>
+        function chatApp() {
+            return {
+                socket: null,
+                // TODO 3: Add a `username: ''` property here to store the sender's name
+                input: '',
+                messages: [],
+                initSocket() {
+                    this.socket = new WebSocket(`ws://${location.host}/ws`);
+
+                    this.socket.onmessage = (event) => {
+                        // TODO 4: Parse `event.data` using `JSON.parse(event.data)` before pushing it to `this.messages`
+                        this.messages.push(event.data);
+                    };
+                },
+                sendMessage() {
+                    if (this.input.trim() !== '' && this.socket?.readyState === WebSocket.OPEN) {
+                        // TODO 5: Create an object `{ username: this.username || 'Anonymous', message: this.input }`
+                        // and wrap it in `JSON.stringify(...)` inside `this.socket.send(...)`
+                        this.socket.send(this.input);
+                        this.input = '';
+                    }
+                }
+            }
+        }
+    </script>
+</body>
 </html>
